@@ -1,0 +1,272 @@
+########################################################################
+  2 ############### node -32nm
+  3 ############### LVT HVT SVT 
+  4 ############### Different volatage areas
+  5 ############### Macro - 40
+  6 ############### Modes - Func & scan 
+  7 ############### Scenerios - 5
+  8 #
+  9 
+ 10 # Supress the following message:
+ 11 #   "Warning: Virtual clock 'v_XXX' cannot be made propagated. (UIC-025)"
+ 12 #     (generated when remove_propagated_clocks is applied)
+ 13 #
+ 14 suppress_message UIC-025
+ 15 
+ 16 # Suppress messages related to setting/getting the routing_direction attribute:
+ 17 suppress_message "ATTR-11 ATTR-12"
+ 18 
+ 19 
+ 20 ########################## Loading the TF file & NDM
+ 21 create_lib -technology /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/ref/tech/saed32nm_1p9m_mw.tf -ref_libs {/project/pdworkspace/pdlab98_workspace/PD    70/FINAL_WORK_DIR/ref/saed32_ndm/saed32_1p9m_tech.ndm /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/ref/saed32_ndm/saed32_hvt_lsdn.ndm /project/pdwork    space/pdlab98_workspace/PD70/FINAL_WORK_DIR/ref/saed32_ndm/saed32_hvt_lsup.ndm /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/ref/saed32_ndm/saed32_hvt    _physical_only.ndm /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/ref/saed32_ndm/saed32_hvt_std.ndm /project/pdworkspace/pdlab98_workspace/PD70/FINAL_W    ORK_DIR/ref/saed32_ndm/saed32_lvt_lsdn.ndm /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/ref/saed32_ndm/saed32_lvt_lsup.ndm /project/pdworkspace/pdlab    98_workspace/PD70/FINAL_WORK_DIR/ref/saed32_ndm/saed32_lvt_physical_only.ndm /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/ref/saed32_ndm/saed32_lvt_s    td.ndm /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/ref/saed32_ndm/saed32_rvt_lsdn.ndm /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/ref    /saed32_ndm/saed32_rvt_lsup.ndm /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/ref/saed32_ndm/saed32_rvt_physical_only.ndm /project/pdworkspace/pdlab98    _workspace/PD70/FINAL_WORK_DIR/ref/saed32_ndm/saed32_rvt_std.ndm /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/ref/saed32_ndm/saed32_SRAMLP2RW128x16.n    dm /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/ref/saed32_ndm/saed32_SRAMLP2RW32x4.ndm /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/re    f/saed32_ndm/saed32_SRAMLP2RW64x32.ndm /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/ref/saed32_ndm/saed32_SRAMLP2RW64x8.ndm} ORCA_TOP.ndm
+ 22 ###################################
+ 23 read_verilog -top ORCA_TOP /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/ref/ORCA_TOP_design_data/ORCA_TOP.v
+ 24 
+ 25 link_block
+ 26 ################ We can add missing ndm by using below command
+ 27 #set_ref_libs -add
+ 28 
+ link_block
+ 26 ################ We can add missing ndm by using below command
+ 27 #set_ref_libs -add
+ 28 
+ 29 ##########################################
+ 30 report_design_mismatch
+ 31 
+ 32 ############################# Loading the UPF  
+ 33 set_design_attributes -elements . -attribute enable_state_propagation_in_add_power_state true
+ 34 load_upf /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/Setup/ORCA_TOP_design_data/ORCA_TOP.upf
+ 35 commit_upf
+ 36 check_mv_design ;#You Shouldn't have errors
+ 37 
+ 38 ########################### Loading the Floorplan, Powerplan Macro Placement 
+ 39 read_def -add_def_only_objects all /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/ref/ORCA_TOP_design_data/ORCA_TOP.def
+ 40 read_def /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/ref/ORCA_TOP_design_data/ORCA_TOP.scandef
+ 41 
+ 42 ####################################
+ 43 source /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/ref/ORCA_TOP_design_data/ORCA_TOP.VA.tcl
+ 44 
+ 45 #######################
+ 46 report_ignored_layers
+ 47 set_ignored_layers -max_routing_layer M6
+ 48 report_ignored_layers
+ 49 
+ 50 rename_block -to_block ORCA_TOP/init_design
+ 51 save_block
+ 52 
+ 53 ############################################################
+ 54 #####################Macroplacement,Floorplan ,Powerplan Done
+ 55 # Student has to copy below files to present workarea
+ 56 #ORCA_TOP_c_ss_125c.tcl
+ 57 #ORCA_TOP_m_test.tcl
+ 58 #ORCA_TOP_s_func.ss_m40c.tcl
+ 59 #ORCA_TOP_m_func.tcl
+ 60 #ORCA_TOP_c_ss_m40c.tcl
+ 61 #ORCA_TOP_s_func.ss_125c.tcl
+ 62 #ORCA_TOP_s_func.ff_m40c.tcl
+  62 #ORCA_TOP_s_func.ff_m40c.tcl
+ 63 #ORCA_TOP_c_ff_m40c.tcl
+ 64 #ORCA_TOP_s_test.ss_125c.tcl
+ 65 #ORCA_TOP_s_test.ff_125c.tcl
+ 66 #ORCA_TOP_c_ff_125c.tcl
+ 67 #ORCA_TOP_s_func.ff_125c.tcl
+ 68 #ORCA_TOP_port_lists.tcl
+ 69 #
+ 70 source /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/Setup/scripts/mcmm_ORCA_TOP.tcl
+ 71 ###################################
+ 72 ### Mode , Scenerio , Corner 
+ 73 #ZWLM Timing 
+ 74 #Netlist checks -
+ 75 #SDC Checks  -
+ 76 #PG Related Checks 
+ 77 ############# ZWLM Timing Checks 
+ 78 set_app_options -name time.high_fanout_net_pin_capacitance -value 0pF
+ 79 set_app_options -name time.delay_calculation_style -value zero_interconnect
+ 80 
+ 81 reset_app_options time.delay_calculation_style
+ 82 #################### Need to reset normal stage
+ 83 
+ 84 ##################
+ 85 #
+ 86 check_timing
+ 87 check_design -checks netlist
+ 88 
+ 89 ##################### PowerPlan
+ 90 check_pg_missing_vias
+ 91 check_pg_drc
+ 92 check_pg_connectivity -check_std_cell_pins none
+ 93 
+ 94 
+ 95 ############################ Placement Stage 
+ 96 get_nets -quiet -hierarchical -filter is_ideal
+ 97 report_design -summary
+ 98 report_design -physical
+ 99 report_net_fanout -threshold 60 [get_flat_nets -filter net_type==signal]
+100 
+101 set TIE_LIB_CELL_PATTERN_LIST "*/*TIE*"
+102 # Enable tie-cells
+103 set_lib_cell_purpose -include optimization [get_lib_cells $TIE_LIB_CELL_PATTERN_LIST]
+104 set_dont_touch [get_lib_cells $TIE_LIB_CELL_PATTERN_LIST] false
+105 # Limit the fanout of each tie cell to 8
+106 set_app_options -list {opt.tie_cell.max_fanout 8}
+107 
+108  ########## We can create path group by using the group_path command But by default tool will create the path groups by using below command 
+109 set_app_options -list {time.enable_io_path_groups true}
+110 set_app_options -list {place_opt.flow.optimize_layers true}
+111 
+112 
+113 # Select the following objects and observe them in the layout.
+114 change_selection [get_cells -physical_context *sd_mux*]
+115 change_selection -add [get_ports "sd_DQ_out[*] sd_CK*"]
+116 
+117 
+118 
+119 # Use magnet placement to pull the SDRAM muxes right next to their ports
+120 magnet_placement -mark_legalize_only [get_ports "sd_DQ_out[*] sd_CK*"]
+121 
+122 
+123 set_dont_touch [get_nets "sd_DQ_out[*] sd_CK*"]
+124 set_dont_touch [get_cells "I_SDRAM_TOP/I_SDRAM_IF/sd_mux_*"]
+125 
+126 
+127 report_dont_touch -all
+128 
+129 # Put the clock controller logic into a bound, right next to the clock ports
+130 create_bound -name bound_clk -boundary {{425.561 606.470} {477.082 707.451}} -type soft {snps_OCC_controller}
+131 
+132 reset_app_options opt.dft.optimize_scan_chain
+133 get_app_option_value -name opt.dft.optimize_scan_chain
+134 
+135 
+136 #####################
+137 place_opt
+ 138 
+139 
+140 check_legality
+141 check_mv_design
+142 report_global_timing
+143 report_utilization
+144 report_design -summary
+145 report_congestion -rerun_global_router true
+146 report_threshold_voltage_groups -nosplit
+147 report_constraints -all_violators
+148 save_block -label placement
+149 ########################## CTS Stage 
+150 ########################PRE CHECKS  CTS Stage 
+151 
+152 report_clocks
+153 report_clocks -groups
+154 report_clock_qor -mode func
+155 report_clock_qor -mode test
+156 
+157 ################################
+158 report_ports -verbose [get_ports *clk]
+159 
+160 ###########################################
+161 # Change the uncertainty for all clocks
+162 foreach_in_collection scen [all_scenarios] {
+163         current_scenario $scen
+164         set_clock_uncertainty 0.1 -setup [all_clocks]
+165         set_clock_uncertainty 0.05 -hold [all_clocks]
+166 }
+167 
+168 # Enable clock reconvergence pessimism removal 
+169 set_app_options -list {time.remove_clock_reconvergence_pessimism true}
+170 
+171 # Set a max transition for the clocks in func mode only
+172 current_mode func
+173 set_max_transition 0.15 -clock_path [get_clocks] -corners [all_corners]
+174 
+175 
+176 report_clock_settings
+177 
+178 set_lib_cell_purpose -exclude hold [get_lib_cells]
+179 set_lib_cell_purpose -include hold [get_lib_cells "*/DELLN*_HVT */NBUFFX2_HVT */NBUFFX4_HVT */NBUFFX8_HVT"]
+180 set_lib_cell_purpose -include hold [get_lib_cells "*/DELLN*_RVT */NBUFFX2_RVT */NBUFFX4_RVT */NBUFFX8_RVT"]
+181 
+182 set_app_options -list {opt.dft.clock_aware_scan true}
+183 
+184 source /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/4_CTS/scripts/ndr.tcl
+185 source /project/pdworkspace/pdlab98_workspace/PD70/FINAL_WORK_DIR/4_CTS/scripts/cts_ex_ndr.tcl
+186 
+187 ############# Tool Crash
+188 #clock_opt -to route_clock
+189 
+190 clock_opt -from build_clock -to build_clock
+191 save_block -label buid_clock
+192 clock_opt -from route_clock -to route_clock
+193 save_block -label route_clock
+194 clock_opt -from final_opto
+195 save_block -label CTS_finalopt
+196 
+197 
+198  ########################## Checks related to the CTS ,Skew ,Latency , & Pulse width violations
+199 report_clock_qor
+200 report_clock_qor -type area
+201 report_constraints -all_violators
+202 check_legality
+203 check_mv_design
+204 report_global_timing
+205 report_utilization
+206 report_design -summary
+207 report_congestion -rerun_global_router true
+208 report_threshold_voltage_groups -nosplit
+209 report_constraints -all_violators
+210 
+211 #timing,area,Vt % 
+212 
+213 
+214 ######################################################## Routing Stage 
+215 source /project/pdworkspace/pdlab98_workspace/FINAL_WORK_DIR/ref/tech/saed32nm_ant_1p9m.tcl
+216 
+217 report_app_options route.detail.antenna*
+218 set_app_options -name route.common.post_detail_route_redundant_via_insertion -value medium
+219 source /project/pdworkspace/pdlab98_workspace/FINAL_WORK_DIR/6_Route/scripts/redundant_via_rules.tcl
+220 
+221 #################### App options related
+222 
+223 set_app_options -name route.detail.timing_driven -value true
+224 set_app_options -name route.global.timing_driven -value true
+225 set_app_options -name route.track.timing_driven -value true
+226 
+227 
+228 
+229 
+230 ######################### Secondary PG Mesh 
+231 set_app_options -category route.common -list {
+232 number_of_secondary_pg_pin_connections 2
+233 separate_tie_off_from_secondary_pg true }
+234 
+235 ############################################### 
+236 route_auto
+237 
+238 ###################
+239 #LVS & DRC 
+240 #
+241 
+242 check_routes
+243 check_lvs
+244 check_legality
+245 check_mv_design
+246 report_global_timing
+247 report_utilization
+248 report_design -summary
+249 report_threshold_voltage_groups -nosplit
+250 
+251 
+252 ######################### 
+253 #
+254 #size_cell ;donwsize or upsize 
+255 # add_buffer
+256 # add_buffer_on_route   
+257 #
+258 #
+259 #
+260 #
+261 # Insert filler cells
+262 set SH_FILLERS "saed32_hvt_std/SHFILL128_HVT saed32_hvt_std/SHFILL64_HVT saed32_hvt_std/SHFILL3_HVT saed32_hvt_std/SHFILL2_HVT saed32_hvt_std/SHFILL1_HVT"
+263 create_stdcell_fillers -lib_cells $SH_FILLERS
+264 connect_pg_net
+265 #
+266 remove_stdcell_fillers_with_violation
+                                                                                          
