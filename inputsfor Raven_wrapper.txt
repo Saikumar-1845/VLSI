@@ -1,0 +1,157 @@
+****My Directory****
+[pdlab58@localhost ~]$ cd  /project/pdworkspace/pdlab58_workspace/
+Present workspace
+[pdlab58@localhost project_1]$ pwd
+/project/pdworkspace/pdlab58_workspace/sai/project_1
+
+****How to invoke the Tool****
+[pdlab58@localhost project_1]$ source ../../bashrc
+[pdlab58@localhost project_1]$ icc2_shell
+
+***********How to Start/Stop The Tool*************
+icc2_shell> start_gui
+icc2_shell> stop_gui
+To restart the GUI, type 'gui_start'.
+icc2_shell> icc2_shell> 
+
+
+
+
+***********Create_lib*************
+icc2_shell> create_lib -technology /project/pdworkspace/pdlab58_workspace/sai/project_1/icc2_workshop_collaterals-master/nangate.tf -ref_libs {/project/pd_workspace/pdlab1/icc2_workshop_collaterals-master/standaloneFlow/CLIBs/NangateOpenCellLibrary.ndm /project/pd_workspace/pdlab1/icc2_workshop_collaterals-master/standaloneFlow/CLIBs/sram_32_1024_freepdk45_TT_1p0V_25C_lib.ndm} JAN071.ndm
+
+create_lib -technology /project/pdworkspace/pdlab58_workspace/sai/project_1/icc2_workshop_collaterals-master/nangate.tf -ref_libs {/project/pd_workspace/pdlab1/icc2_workshop_collaterals-master/standaloneFlow/CLIBs/NangateOpenCellLibrary.ndm /project/pd_workspace/pdlab1/icc2_workshop_collaterals-master/standaloneFlow/CLIBs/sram_32_1024_freepdk45_TT_1p0V_25C_lib.ndm} JAN073.ndm
+
+
+
+
+***********Reading Verilog*************
+ read_verilog /project/pd_workspace/pdlab1/icc2_workshop_collaterals-master/raven_wrapper.synth.v
+
+***********Reading SDC*************
+ source /project/pdworkspace/pdlab58_workspace/sai/project_1/icc2_workshop_collaterals-master/raven_wrapper_updated.sdc
+
+***************************************
+set_attribute [get_ports "ext_clk pll_clk spi_sck"] -value clock -name port_type
+
+
+***************************************
+set_attribute [get_layers {metal1 metal3 metal5 metal7 metal9}] routing_direction horizontal
+set_attribute [get_layers {metal2 metal4 metal6 metal8 metal10}] routing_direction vertical
+
+***************************************
+report_design_mismatch -verbose
+
+*********************Check Timing******************
+check_timing
+
+*******************Floor plan Setup********************
+ initialize_floorplan -honor_pad_limit
+ source /project/pdworkspace/pdlab58_workspace/sai/project_1/pad_placement.tcl
+
+********************Auto Port Placement********************
+
+create_pin_guide -boundary {{1758.1500 300.0000} {1758.1500 569.0000} {1769.8300 569.0000} {1769.8300 300.0000}} -layers {metal5 metal7 metal9} -name OUTPUT_GUIDE [get_ports -filter "direction == out"]
+
+****************************************
+ place_pins -ports [all_outputs]
+
+****************port placement************************
+check_pin_placement
+
+**********************Macro Placement*********************************
+**************************Manual Macro placement(Floorplan)**************************
+set j 12
+source /project/pdworkspace/pdlab58_workspace/sai/project_1/macro_creation.tcl
+source /project/pdworkspace/pdlab58_workspace/sai/project_1/output_connection.tcl
+source /project/pdworkspace/pdlab58_workspace/sai/project_1/input_connection.tcl
+
+Note: if you want to increase or decrease the macros change the command set j 12 (change the requred number)
+
+**************************Auto Macro placement (Floorplan)**************************
+
+ set_app_options -name plan.macro.macro_place_only -value true
+
+create_placement -floorplan
+
+set_fixed_objects [get_cells sram]
+
+Note: if you using the manual placement commands to place the macros then don't use auto placement macros commands
+*******************************************************
+
+create_keepout_margin -outer {1 1 1 1} [get_cells sram]
+
+{sram/KEEPOUT_hard_OUTER_21275}
+create_keepout_margin -outer {2 2 2 2} [get_cells sram]
+*******************************************************
+
+check_design -checks pre_placement_stage
+
+
+************************Saving the floorplan********************************
+
+save_block -label floorplan
+
+************************Power Plan ************************
+
+Powerplan starting step
+
+create_net -power VDD
+create_net -ground VSS
+create_port -port_type power -direction in VDD 
+create_port -port_type ground -direction in VSS
+
+connect_pg_net -net VDD [get_pins -physical_context */VDD]
+connect_pg_net -net VSS [get_pins -physical_context */VSS]
+
+##################### Sroute 
+set_app_options -name plan.pgroute.disable_via_creation -value true
+create_pg_std_cell_conn_pattern Sroute -layers {metal1}
+set_pg_strategy sroute_pg_stat -core -pattern {{name:Sroute} {nets:VDD VSS}}
+compile_pg -strategies sroute_pg_stat
+
+#################### M4M5 Mesh Creation
+create_pg_mesh_pattern M4M5_P -layers {{{vertical_layer:metal4 } {width: 3} {spacing: minimum} {pitch: 27} {offset: 1} {trim: false}} {{horizontal_layer: metal5} {width: 4} {spacing: minimum} {pitch: 122}  {offset: 1} {trim: false}}}
+set_pg_strategy M4M5_P_1  -core -pattern {{name:M4M5_P} {nets: VDD VSS}} -blockage {macros : all} -extension {{stop: 0.2} }
+compile_pg -strategies M4M5_P_1
+
+
+create_pg_mesh_pattern M6M7_P -layers {{{vertical_layer:metal6 } {width: 3} {spacing: minimum} {pitch: 27} {offset: 1} {trim: false}} {{horizontal_layer: metal7} {width: 4} {spacing: minimum} {pitch: 122}  {offset: 1} {trim: false}}}
+set_pg_strategy M6M7_P_1  -core -pattern {{name:M6M7_P} {nets: VDD VSS}} -blockage {macros : all} -extension {{stop: 0.2} }
+compile_pg -strategies M6M7_P_1
+
+
+
+create_pg_mesh_pattern M8M9_P -layers {{{vertical_layer:metal8 } {width: 3} {spacing: minimum} {pitch: 27} {offset: 1} {trim: false}} {{horizontal_layer: metal9} {width: 4} {spacing: minimum} {pitch: 122}  {offset: 1} {trim: false}}}
+set_pg_strategy M8M9_P_1  -core -pattern {{name:M8M9_P} {nets: VDD VSS}} -blockage {macros : all} -extension {{stop: 0.2} }
+compile_pg -strategies M8M9_P_1
+
+************************Pg_Vias************************
+create_pg_vias -from_layers {metal4} -to_layers {metal5} -nets {VDD VSS} -within_bbox {{300.0000 300.0000} {300.0000 1469.0000} {1469.8300 1469.0000} {1469.8300 300.0000}}
+create_pg_vias -from_layers {metal5} -to_layers {metal6} -nets {VDD VSS} -within_bbox {{300.0000 300.0000} {300.0000 1469.0000} {1469.8300 1469.0000} {1469.8300 300.0000}}
+create_pg_vias -from_layers {metal6} -to_layers {metal7} -nets {VDD VSS} -within_bbox {{300.0000 300.0000} {300.0000 1469.0000} {1469.8300 1469.0000} {1469.8300 300.0000}}
+create_pg_vias -from_layers {metal7} -to_layers {metal8} -nets {VDD VSS} -within_bbox {{300.0000 300.0000} {300.0000 1469.0000} {1469.8300 1469.0000} {1469.8300 300.0000}}
+create_pg_vias -from_layers {metal8} -to_layers {metal9} -nets {VDD VSS} -within_bbox {{300.0000 300.0000} {300.0000 1469.0000} {1469.8300 1469.0000} {1469.8300 300.0000}}
+create_pg_vias -from_layers {metal1} -to_layers {metal4} -nets {VDD VSS} -within_bbox {{300.0000 300.0000} {300.0000 1469.0000} {1469.8300 1469.0000} {1469.8300 300.0000}}
+
+************************Checks After power plan************************
+ 
+check_pg_missing_vias
+check_pg_drc
+check_pg_connectivity -check_std_cell_pins none
+
+
+########################## MCMM Flow  
+#
+remove_corners -all
+remove_modes -all
+remove_scenarios -all
+remove_propagated_clocks [get_clocks *]
+
+
+
+
+
+
+
+
